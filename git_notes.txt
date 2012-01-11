@@ -1,0 +1,327 @@
+GIT CONCEPTS
+------------
+
+*  Revolution in storage:  
+
+   -  Instead of being diff-based, the storage is a file system
+      composed of commits, trees and blobs.
+
+   -  Diffs are computed instead of being the basis of the storage.
+
+   -  Storage takes mucho more space.
+
+*  Revolution in local content:
+
+   -  The local content contais all?? history and branches of the
+      project.
+
+   -  All "first-line" checkouts and commits are done locally.
+
+   -  The intermediate "pre-commit" layer (called "index" or "stage")
+      is managed explicitly.  (Local) commits is done in 2 steps:
+      stage and commit.
+
+   -  It is custom to maintain several branches pure locally.
+
+
+*  Revolution in remote version control hosting
+
+   -  Communication with remote machines is a second step after local
+      commits and checkouts.  This makes that in order to promote
+      local changes to the remote repository 3 steps could be needed:
+
+      1.  Stage the changes (git add)
+      2.  Perform a local commit (git commit)
+      3.  Perform a push operation
+
+   -  git is p2p oriented, repositories communicate with each
+      other.  There are two ways to exchange commits between
+      repositories:
+
+      a)  (default) In a pull-push model through a mapping of local
+          and remote branches.
+
+      b)  Through patch extraction + email + patch apply.  This is
+          (for the moment) out of scope in this document.
+
+   -  In order to prevent interference in local development with a
+      external push the usual push-pull model is implemented with a
+      "bare repository" used as a central reference (therefore
+      eliminating the notion of p2p).
+
+   -  "Bare repositories" are repositories in which no development is
+      made (in contrast with normal or "development" repositories).
+      This means that there is no notion of working copy, index,
+      current branch or checkouts.
+
+   -  Push-pull communication between development repositories is
+      always possible although special care must be taken in order not
+      to interfere with the current checked out branch.  Solutions can
+      be: 
+
+      *  Either create a local branch with the sole purpose of
+         receiving external pushes.  Then the local user has to
+         manually merge those pushes in the checked out branch.
+
+      *  Use of a hook macro to automatically:
+
+         -  Abort the push if there is uncommited staging data and/or
+            local modifications.
+            -  Could there be a solution to do a local commit and then
+               an automatic merge?
+
+         -  Abort the push if this results in conflict.
+
+         -  Automatically launch a checkout of the recently added push
+            data.
+
+
+
+*  Setup of a pull-push model with git.
+
+   -  The process to "setup up a centralized git server" consists of
+      the following steps:
+
+      1.  BARE Initialize an empty BARE repository in a directory with .git
+          extension (this is a custom).
+
+      2.  Setup the remote access for  this bare repository  (SSH,
+          git-daemon, file, HTTP, HTTP-DAV, gitweb cgi...)
+
+      3.  Clone the repository to a local DEVELOPMENT repository.
+
+      4.  In the local repository (and in local branches) add the
+          versioned content.
+
+      5.  Stage, commit in the local repository and push the changes
+          to the remote repository.
+
+      Alternatively there is anoter way:
+
+      1.  Start from a full local DEVELOPMENT repository having all
+          the versioned data commited into it.
+
+      2.  BARE clone this development repository into a bare repository
+          (living in a .git directory).
+
+      3.  Transfer the bare repository to the remote location through
+          any means (SSH, FTP...)
+
+      4.  Setup the remote access for the transfered bare repository
+          (as in step 2 above).
+
+      5.  Either:
+
+          -  Define a remote pointer in the local development
+             repository to the remote location of the bare clone.
+
+          -  Replace the local development repository with a clone of
+             the remote one (so that the remote pointers are
+             automatically established).
+
+*  Ways to setup remote git access:          
+
+   -  github.com and gitourious.org (as well as other forges) provide
+      free git hosting.
+
+   -  In order to setup a "git server" in our machine there are the
+      following approaches (which can be combined) 
+
+      *  GIT protocol through git-daemon  (TCP port 9418)
+         -  Does not include authentication or encription.
+         -  A separate process (with possible cooperation with inetd)
+            needs to be launched.
+         -  Only provides pulling from remote to local.
+         -  This increases efficiency in pulling w.r.t. HTTP protocol.
+
+      *  SSH protocol
+         -  Just place the remote repository accesible to an SSH user.
+         -  Prefered way for push
+         -  Allows pull as well (of course)
+
+      *  HTTP(s)
+         -  Just place the remote repository accesible in a DocumentRoot
+         -  Needs a small change in one of the hooks in the remote repo.
+         -  For pulling no action is needed in the HTTP server (all
+            the logic lives in the git client).
+         -  For pushing DAV needs to be setup as well in the HTTP
+            server.
+         -  HTTP(s) is not as efficient as git protocol but however is
+            much more firewall friendly.
+
+      *  File
+         -  Make the remote repository accesible in the file path
+            (either in the same machine, with a network filesystem
+            such as NFS or any remote mounting).
+
+
+*  Revolution in branching and merging:
+
+   -  Branch and merge may come from local work and/or remote
+      push/pull
+
+   -  Conflicts still appear like in any version control system.  Git
+      proposes 3 different solving strategies.
+
+   -  Git allows also to "change history" through the reset and rebase
+      operations.
+
+REFERENCES
+----------
+
+*  Git "for the impatient"
+
+   -  Git magic
+      http://www-cs-students.stanford.edu/~blynn/gitmagic/
+      git://github.com/blynn/gitmagic.git
+
+   -  Git from the bottom up
+      http://newartisans.com/2008/04/git-from-the-bottom-up/
+      http://ftp.newartisans.com/pub/git.from.bottom.up.pdf
+
+   -  Zack slides about version control
+      http://upsilon.cc/~zack/teaching/1011/gla/cours-12.pdf
+
+   -  Scott Chacon Cuento de tres arboles (meaning of git-reset)
+      https://gist.github.com/ed0eb484f92567718c84
+
+   -  Free electrons Git presentation
+      http://free-electrons.com/doc/git.pdf
+      http://free-electrons.com/doc/git.odp
+
+*  Good references
+
+   -  Pro git
+      http://progit.org/book/
+      https://github.com/progit/progit.git
+
+   -  Tomas Pestalozzi
+      http://thomas.enix.org/pub/conf/git2011/presentation.pdf
+
+   -  Git community book
+      http://book.git-scm.com/
+      https://github.com/schacon/gitbook.git
+
+   -  O'Reilly:  Version Contro with Git (Jon Loeliger)
+      http://shop.oreilly.com/product/9780596520137.do
+
+
+*  Other resources
+
+   -  Getting good with GIT (non-free)
+      http://rockablepress.com/books/getting-good-with-git/
+      (was freely available for the month of Oct 2010)
+
+
+   
+
+GIT PROCEDURES
+--------------
+
+*  Creation of a respository
+
+   -  git init
+   -  git clone (based on another) with --bare (if it is going to be a reference).
+
+
+
+*  Daily work
+
+   -  git status:  Shows modified files (not staged), new files
+                   (untracked) and staged files (not commited).
+
+   -  git add <fichero>:  Stage the file or make it trackable.
+
+
+   -  git commit <fichero>:  Stage (or make it trackable) + commit
+
+   -  git commit .  (o git commit -a):  Stage + commit the tracked
+                    files.  It does not track new files.
+
+*  Daily work (corrections)
+
+   -  git reset <path>:  unstage the path
+                The working copy is not affected, it overwrites the
+                stage with the HEAD commit version.
+
+                NOTE:  If there are modifications newer from the git
+                       add phase, the initial staged version will be lost.
+
+
+   -  git reset --soft HEAD~:  (note the ~) uncommit
+                The index is unchanged but the last commit is left
+                unreachable.
+
+                This operation can be done to older commits and then
+                commit the index to squash several commits into one.
+
+                The working copy is not affected neither.
+
+                Note that if you just forgot to:
+
+                -  Write a good comment.
+                -  Include more files in the staging area.
+
+                a git commit --amend will be an easier way to correct
+                the last commit.
+
+   -  git reset [--mixed] HEAD~: (note the ~) uncommit + unadd all the index
+
+                The situation comes before the staging of the working
+                copy (which is still left unaffected).
+
+                If a git commit follows no change will happen because
+                the staging area will be empty (matching the previous
+                commit).
+               
+
+   -  git reset --hard HEAD~: (note the ~) uncommit + unadd + restore
+                the working copy
+  
+                A step further, not only the first commit is
+                unreachable but the intermediate and working copy
+                content have also been overwriten.
+
+                In practical terms ALL the changes of the last commits
+                are gone
+
+    -  The previous ones but "HEAD" instead of "HEAD~":
+
+       -  git reset --soft HEAD:  
+               Does nothing, since the head still points at the latest
+               commit.
+
+       -  git reset [--mixed] HEAD:  Unadd (i.e. unstage) all files
+               All files are unstaged as if no git add had been done.
+
+               However both working copy and the commits are
+               unaffected.
+
+       -  git reset --hard HEAD:  Unstage the index + restore the
+               working copy
+
+               All not commited changes are lost but the commited
+               information is not changed.
+
+
+   -  Seeing differences
+
+      -  Between working copy and stage
+
+
+      -  Between stage and commit
+               
+
+TODO
+----
+
+-  Open an account on github and upload some content (example code,
+   Latex presentations...).
+
+-  Explore documentation of git as rsync (or dropbox)
+
+-  Export knowledge tree as a git repository (and place this file
+   here).
+
+-  Download linux kernel with git and add the RT branch.  Play around.
+
