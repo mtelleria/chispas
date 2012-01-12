@@ -325,3 +325,108 @@ TODO
 
 -  Download linux kernel with git and add the RT branch.  Play around.
 
+
+POORMAN's (although not as poor) RSYNCing with GIT
+--------------------------------------------------
+
+I am exploring how to synchronize two DEVELOPMENT git repositories,
+sort of making mirror of one or another.
+
+So we have 2 repositories:
+
+           work1                             work2
+
+In each of them:
+
+*  we git-init
+*  We add the transfer branch from_work1_to_work2 (outgoing for work1
+   and incoming for work2)
+
+       git branch from_work1_to_work2
+
+*  We add a branch from_work2_to_work1 (outgoing for work2 and
+   incoming for work1).
+
+       git branch from_work2_to_work1
+
+*  We add in each the other as remote 
+   -  In work1:  git remote add work2 <work2_url>
+   -  In work2:  git remote add work1 <work1_url>
+
+
+Then we play with the refspecs.
+
+work1/.git/config:
+
+[remote "work2"]
+	url = file:///home/miguel/learning/git/git_rsync/setup2/work2
+	fetch = +refs/heads/from_work2_to_work1:refs/remotes/work2/from_work2_to_work1
+    push = refs/heads/from_work1_to_work2:refs/heads/from_work1_to_work2
+
+work2/.git/config
+
+[remote "work1"]
+	url = file:///home/miguel/learning/git/git_rsync/setup2/work1
+	fetch = +refs/heads/from_work1_to_work2:refs/remotes/work1/from_work1_to_work2
+    push = refs/heads/from_work2_to_work1:refs/heads/from_work2_to_work1
+
+    (this limits the fetch/pull traffic directions from outgoing to
+    incoming transfer branches  and avoids direct push between master
+    branches).
+
+
+Workflow
+--------
+
+1.  hack in work1 for some time
+    (meanwhile work2 has also had some hacking)
+
+2.  Push transfer from work1 to work2
+
+    a) prepare the changes to be transfered in work1
+
+        (In work1)
+        git checkout from_work1_to_work2
+        git merge master
+        (recommended) git checkout master
+
+    b) do the push in work1
+        git push work2
+
+        (changes arrive work work2's incoming transfer branch).
+
+    c) merge the transfer branch in work2
+
+        (In work2)
+        git checkout master
+        git merge from_work1_to_work2
+
+
+3.  Pull transfer from work1 to work2
+
+    a) prepare the changes to be transfered in work1
+
+       (as in the previous case merge the changes in the outgoing
+       transfer branch)
+
+    b) in work2 you can directly push from the master branch.
+
+       NOTE:  work2's incoming transfer branch (from_work1_to_work2)
+       won't be updated but it will be subsequently be with future
+       pushes from work1.
+
+NOTES:
+
+*  In theory:  Transfers can happen asynchronously with local hack and
+   reverse transfering in either direction.
+
+*  The push refspec is limited to Fast-forward merges.  If for some
+   reason (e.g. at the start) the push is rejected for not
+   fast-forward issues then a manual pull must be done from the
+   incoming transfer branch.
+
+
+Alternative GIT-DROPBOX project:  DVCS-Autosync
+
+            http://www.mayrhofer.eu.org/dvcs-autosync
+            http://lwn.net/Articles/442841/
