@@ -430,3 +430,10 @@ Alternative GIT-DROPBOX project:  DVCS-Autosync
 
             http://www.mayrhofer.eu.org/dvcs-autosync
             http://lwn.net/Articles/442841/
+
+RSYNC-LIKE best solution:  git-annex with * annex.numcopies=2
+-------------------------------------------------------------
+http://git-annex.branchable.com/walkthrough/
+
+Only drawback:  content is always symlinked and read-only (need to
+unlock to modify it).
