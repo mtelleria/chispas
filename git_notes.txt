@@ -283,7 +283,9 @@ GIT PROCEDURES
                 content have also been overwriten.
 
                 In practical terms ALL the changes of the last commits
-                are gone
+                are gone.
+
+                However untracked content is left alone.
 
     -  The previous ones but "HEAD" instead of "HEAD~":
 
@@ -303,6 +305,11 @@ GIT PROCEDURES
                All not commited changes are lost but the commited
                information is not changed.
 
+               The untracked content is left alone
+
+   -  Git reset with untracked or modified files
+
+
 
    -  Seeing differences
 
@@ -310,6 +317,19 @@ GIT PROCEDURES
 
 
       -  Between stage and commit
+
+
+GIT PATCHES + EMAIL SEND PROCESS
+--------------------------------
+
+*   Exchanging patches between GIT repositories (aka with git am)
+
+    1.  Generate the patches with git format-patch
+
+        -  There will be a patch for each individual commit denoting
+           the changes from one commit to the other.
+
+
                
 
 TODO
@@ -318,12 +338,19 @@ TODO
 -  Open an account on github and upload some content (example code,
    Latex presentations...).
 
+   --> Done (although not much has been uploaded yet)
+
 -  Explore documentation of git as rsync (or dropbox)
+   --> Done:  So far git-annex seems to do the job
 
 -  Export knowledge tree as a git repository (and place this file
    here).
+   --> Partially done
 
 -  Download linux kernel with git and add the RT branch.  Play around.
+   --> Partially done
+   -  Versions correspond to tags, not branches
+   -  I have not added the RT branch yet
 
 
 POORMAN's (although not as poor) RSYNCing with GIT
@@ -431,9 +458,45 @@ Alternative GIT-DROPBOX project:  DVCS-Autosync
             http://www.mayrhofer.eu.org/dvcs-autosync
             http://lwn.net/Articles/442841/
 
+
+
 RSYNC-LIKE best solution:  git-annex with * annex.numcopies=2
 -------------------------------------------------------------
 http://git-annex.branchable.com/walkthrough/
 
 Only drawback:  content is always symlinked and read-only (need to
 unlock to modify it).
+
+
+GIT-BUILDPACKAGE
+----------------
+
+Helps in using git for debian packaging:
+
+-  At the debian/ directory.
+-  At upstream patch level (with gbp-pq)
+
+Info:
+
+Tutorial + reference
+         http://honk.sigxcpu.org/projects/git-buildpackage/manual-html/gbp.html
+
+Workflows for debian/patches
+         https://honk.sigxcpu.org/piki/development/debian_packages_in_git/
+
+Download
+     https://honk.sigxcpu.org/piki/projects/git-buildpackage/
+
+Overview
+     http://wiki.debian.org/PackagingWithGit
+
+Personal work (using pristine-tar)
+     http://www.eyrie.org/~eagle/notes/debian/git.html
+
+Alternative:  git-dpm
+     http://wiki.debian.org/PackagingWithGit/GitDpm
+
+Helper multi-arch builder (not only for git):
+     http://wiki.debian.org/cowbuilder
+     http://wiki.debian.org/qemubuilder
+
