@@ -8,7 +8,7 @@ GIT CONCEPTS
 
    -  Diffs are computed instead of being the basis of the storage.
 
-   -  Storage takes mucho more space.
+   -  Storage takes much more space.
 
 *  Revolution in local content:
 
@@ -27,7 +27,7 @@ GIT CONCEPTS
 *  Revolution in remote version control hosting
 
    -  Communication with remote machines is a second step after local
-      commits and checkouts.  This makes that in order to promote
+      commits and checkouts.  As a result in order to promote
       local changes to the remote repository 3 steps could be needed:
 
       1.  Stage the changes (git add)
@@ -308,7 +308,6 @@ GIT PROCEDURES
                The untracked content is left alone
 
    -  Git reset with untracked or modified files
-
 
 
    -  Seeing differences
