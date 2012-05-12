@@ -138,16 +138,92 @@ GIT CONCEPTS
          -  Just place the remote repository accesible to an SSH user.
          -  Prefered way for push
          -  Allows pull as well (of course)
+         -  However no authorisation or access control is done beyond
+            the global SSH capabilities.  Use gitolite or gitosis.
+            -  In particular there is no read/write separation.
 
-      *  HTTP(s)
+      *  HTTP(s) simple (no DAV, no smart http)
          -  Just place the remote repository accesible in a DocumentRoot
-         -  Needs a small change in one of the hooks in the remote repo.
+         -  Needs a small change in one of the hooks in the remote
+            repo.
+            -  typically 
+                  mv update-hook.sample update-hook
+               so that "git update-server-info" is executed after
+               every push.  (side note, this push will come from SSH
+               or other write system).
+   
          -  For pulling no action is needed in the HTTP server (all
             the logic lives in the git client).
-         -  For pushing DAV needs to be setup as well in the HTTP
-            server.
+         -  Simple HTTP does not provide push access.
          -  HTTP(s) is not as efficient as git protocol but however is
             much more firewall friendly.
+         -  No 
+
+      *  HTTP DAV (obsoleted by "smart http")
+         -  No specific URL prefix for the client's remote.  The
+            client uses the http:// URL (used in simple HTTP) for push
+            also. 
+
+         -  Place the repository under a "DAV on" Apache location
+            directive.
+
+         -  Give permissions for operations: GET HEAD PROPFIND OPTIONS
+            REPORT MKCOL LOCK UNLOCK PUT MOVE
+
+         -  Don't forget to mv update-hook.sample to update-hook
+
+         -  Very slow performance since everything is done from the
+            client side.
+
+         -  No authentication or access control is done beyond
+            standard HTML.
+
+
+
+      *  HTTP smart http a.k.a git-http-backend
+         -  Available from git 1.6.6 (end of 2009)
+         -  http://git-scm.com/2010/03/04/smart-http.html
+         
+         -  No specific URL prefix for the client's remote.  The
+            client uses the http:// URL (used in simple HTTP) for push
+            also. 
+
+         -  You need to setup a CGI script access in Apache for
+            git-http-backend.   This script needs the environment
+            variables 
+
+         NOTE:  Contrary to what the man page of git-http-backend
+                proposes, there is no way to filter out write
+                operations (i.e. the ones that invoke git-receive-pack
+                service) with the LocationMatch directive.
+
+                This is because the "git-receive-pack" portion of the
+                URL is invoked in the query-string as the value of the
+                service parameter, as for example:
+
+                /git/mast_package.git/info/refs?service=git-receive-pack
+
+                and according to Apache Docs[1] (pointed out by
+                StackOverflow[2]) LocationMatch does not receive the
+                query-string portion of the URL for regex matching.
+
+[1] http://httpd.apache.org/docs/2.0/en/mod/core.html#location
+[2] http://stackoverflow.com/questions/2019594/apache-locationmatch-match-query-string
+
+For all origin (non-proxy) requests, the URL to be matched is a
+URL-path of the form /path/. No scheme, hostname, port, or query
+string may be included. For proxy requests, the URL to be matched is
+of the form scheme://servername/path, and you must include the
+prefix. 
+
+                So the only possibility would be using mod-rewrite
+                exposing a / virtual directory tree just for filtering
+                purposes ?????.
+
+http://kerneltrap.org/mailarchive/git/2010/3/9/25233/thread
+
+
+
 
       *  File
          -  Make the remote repository accesible in the file path
@@ -205,6 +281,18 @@ REFERENCES
    -  O'Reilly:  Version Contro with Git (Jon Loeliger)
       http://shop.oreilly.com/product/9780596520137.do
 
+   -  Git for the nervous developer
+      http://beust.com/weblog/2010/04/06/git-for-the-nervous-developer/
+
+      A very nice (and original) overview with also nice links
+
+   -  Git ready
+      http://gitready.com/
+
+      Recepies oriented site
+
+
+
 
 *  Other resources
 
@@ -213,7 +301,6 @@ REFERENCES
       (was freely available for the month of Oct 2010)
 
 
-   
 
 GIT PROCEDURES
 --------------
